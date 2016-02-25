@@ -1,1 +1,1 @@
-"# GPSWebApp_MAVEN
+# GPSWebApp new MAVEN project
