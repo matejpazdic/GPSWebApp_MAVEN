@@ -5,6 +5,8 @@
 package sk.tuke.fei.kpi.Database;
 
 import sk.tuke.fei.kpi.Logger.FileLogger;
+import sk.tuke.fei.kpi.utils.hash.HashingException;
+import sk.tuke.fei.kpi.utils.hash.StringHasher;
 
 import java.sql.*;
 
@@ -13,6 +15,9 @@ import java.sql.*;
  * @author Matej Pazdič
  */
 public class DBLoginCreator {
+
+    // FIXME: 07.03.2016 Create setting table in database foor selecting the global setting for hashing algorithm
+    private static final StringHasher.HashingType HASHING_TYPE = StringHasher.HashingType.MD5;
     
     private Connection connect = null;
     private Statement statement = null;
@@ -26,22 +31,12 @@ public class DBLoginCreator {
         try {
 
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-      connect = DriverManager
-          .getConnection("jdbc:mysql://localhost:3306/GPSWebApp","root","Www4dm1n#");
-
-//      while (resultSet.next()) {
-//        String user = resultSet.getString("user_email");
-//        String number = resultSet.getString("user_pass");
-//        System.out.println("User: " + user);
-//        System.out.println("ID: " + number);
-//      }
+	        // FIXME: 07.03.2016 Move credentials to properties file or some...
+	        connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/GPSWebApp","root","Www4dm1n#");
         } catch (Exception e) {
             FileLogger.getInstance().createNewLog("ERROR: Cannot connect to Database in DBLoginCreator!!!");
             throw e;
         }
-//    finally {
-//      close();
-//    }
 
     }
     
@@ -54,16 +49,16 @@ public class DBLoginCreator {
     public void createNewLogin(String email, String password, String userToken){
         try {
             statement =  connect.createStatement();
-            //statement.executeQuery();
-            statement.executeUpdate("INSERT INTO USERS (USER_EMAIL, USER_PASS, USER_TOKEN) VALUES ('"+ email +"' ,'" + password + "' ,'" + userToken + "')");
+	        final String hashedPassword = StringHasher.toHash(password, HASHING_TYPE);
+	        statement.executeUpdate("INSERT INTO USERS (USER_EMAIL, USER_PASS, USER_TOKEN) VALUES ('"+ email +"' ,'" + hashedPassword + "' ,'" + userToken + "')");
             
             FileLogger.getInstance().createNewLog("User " + email + " was successfuly created!");
-            
-            close();
         } catch (SQLException ex) {
-            System.out.println("Nezapisal som do DB!!!");
-            FileLogger.getInstance().createNewLog("ERROR: User " + email + " was NOT successfuly created!");
-            close();
+	        FileLogger.getInstance().createNewLog("ERROR: User " + email + " was NOT successfuly created!");
+        } catch (HashingException e) {
+	        FileLogger.getInstance().createNewLog("ERROR: There was something wrong while hashing the new user password, the email is: " + email + ", and the message is: " + e.getMessage());
+        } finally {
+	        close();
         }
     }
     
@@ -83,16 +78,17 @@ public class DBLoginCreator {
                 age = "-1";
             }
             statement =  connect.createStatement();
-            //statement.executeQuery();
-            statement.executeUpdate("INSERT INTO USERS (USER_EMAIL, USER_FIRST_NAME, USER_LAST_NAME , USER_AGE, USER_ACTIVITY, USER_PASS, USER_TOKEN) VALUES ('"+ email +"' ,'" + firstName + "' ,'"+ lastName +"' ," + age + " ,'"+ activity +"' ,'" + password + "' ,'" + userToken + "')");
+	        final String hashedPassword = StringHasher.toHash(password, HASHING_TYPE);
+            statement.executeUpdate("INSERT INTO USERS (USER_EMAIL, USER_FIRST_NAME, USER_LAST_NAME , USER_AGE, USER_ACTIVITY, USER_PASS, USER_TOKEN) VALUES ('"+ email +"' ,'" + firstName + "' ,'"+ lastName +"' ," + age + " ,'"+ activity +"' ,'" + hashedPassword + "' ,'" + userToken + "')");
             
             FileLogger.getInstance().createNewLog("User " + email + " was successfuly created!");
-            
-            close();
+
         } catch (SQLException ex) {
-            System.out.println("Nezapisal som do DB!!!");
             FileLogger.getInstance().createNewLog("ERROR: User " + email + " was NOT successfuly created!");
-            close();
+        } catch (HashingException e) {
+	        FileLogger.getInstance().createNewLog("ERROR: There was something wrong while hashing the new user password, the email is: " + email + ", and the message is: " + e.getMessage());
+        } finally {
+	        close();
         }
     }
     

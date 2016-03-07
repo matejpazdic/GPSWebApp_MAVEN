@@ -138,8 +138,6 @@ and open the template in the editor.
                 out.print("<script>$(document).ready(function() {$('#top1').find('a').trigger('click');});</script>");
                 
                 session.removeAttribute("incorrectValues");
-                //out.print("<script>alert(\"This email has been already used!\")</script>");
-                
             }
         %>
         <button ng-disabled="!form.$valid" class="btn btn-lg btn-primary btn-block" type="submit" onClick="return check();">Register</button>

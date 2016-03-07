@@ -7,13 +7,7 @@
 <%@page import="sk.tuke.fei.kpi.Database.DBLoginFinder"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%
-    //session.removeAttribute("trackFilename");
-    //session.removeAttribute("trackName");
-    //session.removeAttribute("trackDescr");
-    //session.removeAttribute("trackActivity");
-    //session.removeAttribute("access");
     session.removeAttribute("Admin");
-    
 %>
 <%
             DBLoginFinder finder = new DBLoginFinder();
@@ -151,8 +145,6 @@
            <br>
            <%
             if (session.getAttribute("isCorrectLogin") != null && session.getAttribute("isCorrectLogin").equals("False")) {
-                    //out.print("<script>alert(\"Incorrect Login or Password!\")</script>");
-                    
                     out.print("<script>$(document).ready(function() {$('#top1').find('a').trigger('click');});</script>");
                     session.removeAttribute("isCorrectLogin");
                 
